@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=ev_coownership;encrypt=true;trustServerCertificate=true
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:YourStrong!Passw0rd}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLServerDialect
+    open-in-view: false
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+
+
