@@ -99,3 +99,259 @@
 - Global exception handler áp dụng cho toàn app.
 - Swagger hiển thị đủ 2 endpoints, mô tả rõ request/response.
 - Có tối thiểu 5–8 test (unit + integration) xanh, README cập nhật.
+
+---
+
+# Kế hoạch công việc Ngày 3 (4 thành viên)
+
+## Mục tiêu chung
+- **Triển khai JWT Authentication hoàn chỉnh**: JWT Filter, Security Context, protect tất cả endpoints trừ `/api/auth/**`.
+- **Authorization dựa trên user context**: Lấy current user từ JWT token, validate ownership trong các operations.
+- **Hoàn thiện Booking module**: Cancel booking, status management, get bookings by user/vehicle với filter.
+- **Cải thiện business logic**: Validate permissions, ownership checks, booking conflicts nâng cao.
+
+---
+
+## Tín – JWT Filter + Security Context (feature/tin)
+
+### Nhiệm vụ chính:
+1. **Tạo JwtAuthenticationFilter**:
+   - Extract token từ header `Authorization: Bearer <token>`
+   - Validate token với `JwtService.validateToken()`
+   - Load User từ email trong token
+   - Set Authentication vào SecurityContext
+
+2. **Cải thiện JwtService**:
+   - Thêm method `validateToken(String token)`: verify signature, check expiration
+   - Thêm method `extractEmail(String token)`: parse email từ token
+   - Handle JwtException và throw custom exception
+
+3. **Update SecurityConfig**:
+   - Thêm JwtAuthenticationFilter vào filter chain (trước UsernamePasswordAuthenticationFilter)
+   - Protect tất cả endpoints trừ `/api/auth/**`, `/swagger-ui/**`, `/v3/api-docs/**`
+   - Yêu cầu authenticated cho các endpoint khác
+
+4. **Tạo UserPrincipal hoặc Custom UserDetailsService**:
+   - Load user với roles từ database
+   - Implement UserDetails interface
+
+### Files cần tạo/sửa:
+- `src/main/java/com/evcoownership/coowner/security/JwtAuthenticationFilter.java` (mới)
+- `src/main/java/com/evcoownership/coowner/security/UserDetailsServiceImpl.java` (mới - optional)
+- `src/main/java/com/evcoownership/coowner/config/SecurityConfig.java` (update)
+- `src/main/java/com/evcoownership/coowner/security/JwtService.java` (update)
+
+### Deliverables:
+- JWT filter hoạt động, extract user từ token
+- Tất cả endpoints (trừ auth) yêu cầu valid JWT token
+- Response 401 Unauthorized khi token invalid/expired/missing
+
+---
+
+## Trinh – Current User Context + Authorization (feature/trinh)
+
+### Nhiệm vụ chính:
+1. **Tạo SecurityUtils/CurrentUser helper**:
+   - Method `getCurrentUser()`: lấy User từ SecurityContext
+   - Method `getCurrentUserEmail()`: lấy email từ Authentication
+   - Throw exception nếu user chưa authenticated
+
+2. **Update Controllers để dùng current user**:
+   - `BookingController.create()`: lấy userId từ current user (bỏ `userId` trong request)
+   - `GroupController.create()`: gán creator là current user
+   - `VehicleController`: validate user thuộc group trước khi tạo/query vehicle
+
+3. **Authorization checks trong Service layer**:
+   - `BookingService.create()`: validate current user thuộc group của vehicle
+   - `GroupService.addMember()`: chỉ owner/creator của group mới được thêm member
+   - `VehicleService.create()`: chỉ member của group mới được tạo vehicle
+
+4. **Custom Exception cho Authorization**:
+   - Tạo `UnauthorizedException` hoặc `ForbiddenException`
+   - Handle trong GlobalExceptionHandler → 403 Forbidden
+
+### Files cần tạo/sửa:
+- `src/main/java/com/evcoownership/coowner/security/SecurityUtils.java` (mới)
+- `src/main/java/com/evcoownership/coowner/controller/BookingController.java` (update)
+- `src/main/java/com/evcoownership/coowner/controller/GroupController.java` (update)
+- `src/main/java/com/evcoownership/coowner/service/BookingService.java` (update)
+- `src/main/java/com/evcoownership/coowner/service/GroupService.java` (update)
+- `src/main/java/com/evcoownership/coowner/exception/GlobalExceptionHandler.java` (update)
+
+### Deliverables:
+- Controllers tự động lấy current user từ JWT
+- Business logic validate permissions (user thuộc group, có quyền thực hiện action)
+- Error 403 khi không đủ quyền
+
+---
+
+## Lâm – Booking Module Hoàn thiện (feature/lam)
+
+### Nhiệm vụ chính:
+1. **Thêm endpoints Booking**:
+   - `PUT /api/bookings/{id}/cancel`: Cancel booking (chỉ owner booking mới cancel được)
+   - `GET /api/bookings/my-bookings`: Lấy bookings của current user (có filter: status, vehicleId, dateRange)
+   - `GET /api/bookings/{id}`: Chi tiết booking
+   - `PUT /api/bookings/{id}/status`: Update status (PENDING → CONFIRMED/CANCELLED) - chỉ admin/owner group
+
+2. **Cải thiện BookingService**:
+   - Method `cancel(Long bookingId)`: Validate owner, set status = "CANCELLED"
+   - Method `getMyBookings(String status, Long vehicleId, LocalDate startDate, LocalDate endDate)`: Filter phức tạp
+   - Method `getBooking(Long id)`: Chi tiết với relations (vehicle, group, user)
+   - Method `updateStatus(Long id, String status)`: Với authorization check
+
+3. **Validation nâng cao**:
+   - Booking conflict: check overlap với status = "CONFIRMED" hoặc "PENDING" (bỏ qua "CANCELLED")
+   - Không cho cancel booking đã qua (endTime < now)
+   - Validate date range cho filter
+
+4. **DTO mới**:
+   - `BookingDto`: Response với thông tin đầy đủ (vehicle model, user name, group name)
+   - `UpdateBookingStatusRequest`: DTO cho update status
+
+### Files cần tạo/sửa:
+- `src/main/java/com/evcoownership/coowner/dto/BookingDto.java` (mới)
+- `src/main/java/com/evcoownership/coowner/dto/UpdateBookingStatusRequest.java` (mới)
+- `src/main/java/com/evcoownership/coowner/controller/BookingController.java` (update)
+- `src/main/java/com/evcoownership/coowner/service/BookingService.java` (update)
+- `src/main/java/com/evcoownership/coowner/repository/BookingRepository.java` (update - thêm query methods)
+
+### Deliverables:
+- Booking CRUD đầy đủ với authorization
+- Filter bookings theo user, vehicle, status, date range
+- Cancel booking với validation
+- Response BookingDto chuẩn hóa
+
+---
+
+## Thắng – Enhanced Exception + Testing Auth (feature/thang)
+
+### Nhiệm vụ chính:
+1. **Cải thiện GlobalExceptionHandler**:
+   - Handle `JwtException` → 401 Unauthorized với message rõ ràng
+   - Handle `AccessDeniedException` / `ForbiddenException` → 403 Forbidden
+   - Handle `EntityNotFoundException` → 404 Not Found (tạo custom exception nếu chưa có)
+   - Format lỗi authentication: `{timestamp, code: "UNAUTHORIZED", message: "...", path}`
+
+2. **Tạo custom exceptions**:
+   - `ResourceNotFoundException`: Cho 404 (group/vehicle/user không tồn tại)
+   - `ForbiddenException`: Cho 403 (không đủ quyền)
+   - `UnauthorizedException`: Cho 401 (chưa login hoặc token invalid)
+
+3. **Integration Tests cho Authentication**:
+   - Test login endpoint: success, invalid email, wrong password
+   - Test protected endpoint: với token, không có token, token expired, token invalid
+   - Test authorization: user A không thể cancel booking của user B
+   - Test current user context: booking tạo với đúng user từ token
+
+4. **Cập nhật Swagger/OpenAPI**:
+   - Thêm SecurityScheme cho Bearer JWT
+   - Tag các endpoints cần authentication
+   - Example request với Authorization header
+
+5. **Update README/Postman Collection**:
+   - Hướng dẫn login lấy token
+   - Gửi token trong header `Authorization: Bearer <token>`
+   - Update Postman collection với auth flow
+
+### Files cần tạo/sửa:
+- `src/main/java/com/evcoownership/coowner/exception/ResourceNotFoundException.java` (mới)
+- `src/main/java/com/evcoownership/coowner/exception/ForbiddenException.java` (mới)
+- `src/main/java/com/evcoownership/coowner/exception/UnauthorizedException.java` (mới - optional)
+- `src/main/java/com/evcoownership/coowner/exception/GlobalExceptionHandler.java` (update)
+- `src/test/java/.../controller/AuthControllerTest.java` (mới)
+- `src/test/java/.../controller/BookingControllerSecurityTest.java` (mới)
+- Swagger config (update)
+- README.md (update)
+
+### Deliverables:
+- Exception handling đầy đủ cho auth errors (401/403/404)
+- 8–10 integration tests cho authentication flows (xanh)
+- Swagger có security scheme, có thể test với Bearer token
+- README hướng dẫn authentication flow rõ ràng
+
+---
+
+## Mốc thời gian đề xuất Ngày 3
+- **09:00–09:30**: Kickoff, chốt JWT flow, authorization rules, exception hierarchy.
+- **09:30–12:00**: Mỗi người triển khai phần được giao:
+  - Tín: JWT Filter + SecurityConfig
+  - Trinh: SecurityUtils + Current User Context
+  - Lâm: Booking endpoints + Business logic
+  - Thắng: Exception handling + Tests setup
+- **13:00–14:00**: Tích hợp JWT Filter với Current User Context, fix conflicts.
+- **14:00–15:30**: Hoàn thiện Booking module, authorization checks, exception handling.
+- **15:30–16:30**: Viết integration tests, cập nhật Swagger, test end-to-end flow.
+- **16:30–17:00**: Review chéo, demo authentication flow, chốt DONE.
+
+---
+
+## Tiêu chí hoàn thành Ngày 3
+
+### Must Have (100%):
+- ✅ Tất cả endpoints (trừ `/api/auth/**`) yêu cầu JWT token
+- ✅ Request không có token → 401 Unauthorized
+- ✅ Controllers tự động lấy current user từ JWT token
+- ✅ Booking tạo với đúng user từ token (không cần truyền userId)
+- ✅ Authorization: user chỉ thao tác resources của mình/group mình
+- ✅ Cancel booking endpoint hoạt động với validation
+- ✅ Exception handler xử lý JwtException, AccessDeniedException → 401/403
+
+### Should Have (80%):
+- ✅ `GET /api/bookings/my-bookings` với filter (status, vehicleId, date)
+- ✅ Swagger có Bearer JWT security scheme
+- ✅ 8+ integration tests cho auth flows (xanh)
+- ✅ README có hướng dẫn authentication flow
+
+### Nice to Have (nếu còn time):
+- ✅ Role-based authorization (ADMIN có thể cancel mọi booking)
+- ✅ Refresh token endpoint
+- ✅ Logging authentication attempts
+
+---
+
+## Lưu ý kỹ thuật
+
+### JWT Filter Flow:
+```
+Request → JwtAuthenticationFilter → Extract token → Validate → Load User → Set SecurityContext → Continue
+```
+
+### SecurityContext Usage:
+```java
+Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+String email = auth.getName(); // email từ token
+User user = userRepository.findByEmail(email).orElseThrow(...);
+```
+
+### Authorization Pattern:
+```java
+// Trong Service
+User currentUser = securityUtils.getCurrentUser();
+if (!booking.getUser().getId().equals(currentUser.getId())) {
+    throw new ForbiddenException("Không có quyền thực hiện action này");
+}
+```
+
+### Testing với JWT:
+```java
+// Tạo token test
+String token = jwtService.generateToken("test@example.com");
+// Gửi trong header
+mockMvc.perform(post("/api/bookings")
+    .header("Authorization", "Bearer " + token)
+    .contentType(MediaType.APPLICATION_JSON)
+    .content(requestJson))
+```
+
+---
+
+## Checklist trước khi merge PR:
+- [ ] JWT filter hoạt động, test với Postman/Swagger
+- [ ] Current user context được sử dụng trong ít nhất 3 endpoints
+- [ ] Authorization check trong BookingService, GroupService
+- [ ] Exception handler xử lý 401/403/404
+- [ ] Integration tests xanh (mvn test)
+- [ ] Swagger có security scheme
+- [ ] README cập nhật authentication flow
+- [ ] Code review chéo giữa các thành viên
