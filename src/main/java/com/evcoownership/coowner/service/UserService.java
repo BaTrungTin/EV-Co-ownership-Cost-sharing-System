@@ -8,18 +8,24 @@ import com.evcoownership.coowner.repository.RoleRepository;
 import com.evcoownership.coowner.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageImpl;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -31,7 +37,7 @@ public class UserService {
         User user = new User();
         user.setEmail(req.getEmail());
         user.setFullName(req.getFullName());
-        user.setPassword(req.getPassword());
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
 
         Role role = roleRepository.findByName("CO_OWNER").orElseGet(() -> {
             Role r = new Role();
@@ -44,8 +50,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserDto> listUsers() {
-        return userRepository.findAll().stream().map(this::toDto).collect(Collectors.toList());
+    public Page<UserDto> listUsers(Pageable pageable) {
+        return userRepository.findAll(pageable).map(this::toDto);
     }
 
     private UserDto toDto(User user) {
