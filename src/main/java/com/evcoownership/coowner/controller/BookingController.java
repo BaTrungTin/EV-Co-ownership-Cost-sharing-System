@@ -53,7 +53,7 @@ public class BookingController {
         }
         
         // Truyền currentUser xuống service
-        Booking newBooking = bookingService.createNewBooking(request, currentUser);
+        Booking newBooking = bookingService.createNewBooking(request, currentUser.getId());
         
         // Trả về 201 Created
         return ResponseEntity.status(HttpStatus.CREATED).body(newBooking);
