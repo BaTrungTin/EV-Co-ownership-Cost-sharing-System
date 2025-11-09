@@ -29,66 +29,52 @@ public class BookingService {
         this.userRepository = userRepository;
     }
 
-    //Hàm "quản lý" chính: tạo một booking mới.
-    //POST /api/bookings
     public Booking createNewBooking(CreateBookingRequest request, Long userId) {
 
-        // 1. LẤY DỮ LIỆU CỐT LÕI
         User currentUser = findUserOrThrow(userId);
         Vehicle vehicle = findVehicleOrThrow(request.getVehicleId());
 
-        // 2. THỰC HIỆN TẤT CẢ KIỂM TRA LOGIC
-        // Các hàm này sẽ ném ra lỗi nếu có gì đó sai.
         validateBookingLogic(request, currentUser, vehicle);
 
-        // 3. NẾU MỌI THỨ OK -> TẠO VÀ LƯU
         Booking newBooking = buildBookingEntity(request, currentUser, vehicle);
         return bookingRepository.save(newBooking);
     }
 
-    // CÁC HÀM HELPER (PRIVATE) ĐỂ GIÚP "RÚT GỌN" LOGIC
-
-    //Một hàm "helper" để gom tất cả các bước kiểm tra logic lại một chỗ.
-
     private void validateBookingLogic(CreateBookingRequest request, User user, Vehicle vehicle) {
-        // Kiểm tra 1: Thời gian hợp lệ (start phải trước end)
+        // Kiểm tra thời gian hợp lệ (start phải trước end)
         validateTimeRange(request.getStartTime(), request.getEndTime());
         
-        // Kiểm tra 2: Người dùng có thuộc nhóm của xe không
+        // Kiểm tra người dùng có thuộc nhóm của xe không
         validateGroupMembership(user, vehicle);
         
-        // Kiểm tra 3: Xe có bị trùng lịch không
+        // Kiểm tra xe có bị trùng lịch không
         validateAvailability(vehicle.getId(), request.getStartTime(), request.getEndTime());
     }
 
-
-    //Xây dựng đối tượng Booking (Entity) từ DTO và các đối tượng đã lấy được.
     private Booking buildBookingEntity(CreateBookingRequest request, User user, Vehicle vehicle) {
         Booking newBooking = new Booking();
         newBooking.setVehicle(vehicle);
         newBooking.setUser(user);
-        newBooking.setGroup(vehicle.getGroup()); // Lấy group từ vehicle (đã được xác thực)
+        newBooking.setGroup(vehicle.getGroup()); 
         newBooking.setStartTime(request.getStartTime());
         newBooking.setEndTime(request.getEndTime());
-        newBooking.setStatus("pending"); // Trạng thái mặc định khi mới tạo
+        newBooking.setStatus("pending"); 
         return newBooking;
     }
 
-    // --- Các hàm kiểm tra chi tiết ---
-
     private User findUserOrThrow(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException(" Không tìm thấy người dùng"));
     }
 
     private Vehicle findVehicleOrThrow(Long vehicleId) {
         return vehicleRepository.findById(vehicleId)
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found")); 
+                .orElseThrow(() -> new IllegalArgumentException(" Không tìm thấy xe")); 
     }
 
     private void validateTimeRange(LocalDateTime startTime, LocalDateTime endTime) {
         if (startTime.isAfter(endTime)) {
-            throw new IllegalArgumentException("Start time must be before end time");
+            throw new IllegalArgumentException(" Thời gian bắt đầu phải trước thời gian kết thúc");
         }
     }
 
@@ -97,7 +83,7 @@ public class BookingService {
         Group userGroup = user.getGroup();
 
         if (vehicleGroup == null || userGroup == null || !vehicleGroup.getId().equals(userGroup.getId())) {
-            throw new IllegalArgumentException("User does not belong to this vehicle's group");
+            throw new IllegalArgumentException(" Người dùng không thuộc nhóm sở hữu xe này");
         }
     }
 
@@ -109,7 +95,7 @@ public class BookingService {
         );
 
         if (isOverlapping) { 
-            throw new IllegalArgumentException("This time slot is already booked...");
+            throw new IllegalArgumentException(" Xe đã được đặt trong khoảng thời gian này");
         }
     }
 

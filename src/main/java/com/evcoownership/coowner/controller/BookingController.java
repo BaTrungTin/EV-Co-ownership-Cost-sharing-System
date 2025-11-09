@@ -5,13 +5,12 @@ import com.evcoownership.coowner.model.Booking;
 import com.evcoownership.coowner.model.User;
 import com.evcoownership.coowner.service.BookingService;
 
-// --- THÊM CÁC IMPORT CỦA SWAGGER ---
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-// ------------------------------------
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +24,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/bookings")
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Booking Controller", description = "Endpoints để quản lý Đặt chỗ (Booking)") 
 public class BookingController {
 
@@ -72,10 +72,10 @@ public class BookingController {
             @Parameter(description = "ID của xe cần tìm", required = true) 
             @RequestParam Long vehicleId,
             
-            @Parameter(description = "Thời gian bắt đầu lọc (tùy chọn)", example = "2025-01-01T10:00:00") // <-- ĐÃ THÊM
+            @Parameter(description = "Thời gian bắt đầu lọc (tùy chọn)", example = "2025-01-01T10:00:00") 
             @RequestParam(required = false) LocalDateTime startTime,
             
-            @Parameter(description = "Thời gian kết thúc lọc (tùt chọn)", example = "2025-01-30T17:00:00") // <-- ĐÃ THÊM
+            @Parameter(description = "Thời gian kết thúc lọc (tùt chọn)", example = "2025-01-30T17:00:00") 
             @RequestParam(required = false) LocalDateTime endTime
     ) {
         List<Booking> bookings = bookingService.findBookings(vehicleId, startTime, endTime);
