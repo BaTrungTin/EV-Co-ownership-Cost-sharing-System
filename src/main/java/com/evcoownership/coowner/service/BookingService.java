@@ -112,4 +112,5 @@ public class BookingService {
             return bookingRepository.findByVehicleId(vehicleId);
         }
     }
+    
 }

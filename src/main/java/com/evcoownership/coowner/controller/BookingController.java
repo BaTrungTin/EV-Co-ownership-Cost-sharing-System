@@ -81,4 +81,5 @@ public class BookingController {
         List<Booking> bookings = bookingService.findBookings(vehicleId, startTime, endTime);
         return ResponseEntity.ok(bookings);
     }
+    
 }
