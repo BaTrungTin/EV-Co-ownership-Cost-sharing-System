@@ -3,14 +3,17 @@ package com.evcoownership.coowner.controller;
 import com.evcoownership.coowner.dto.CreateUserRequest;
 import com.evcoownership.coowner.dto.UserDto;
 import com.evcoownership.coowner.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/users")
+@Tag(name = "user-controller", description = "User management endpoints")
 public class UserController {
 
     private final UserService userService;
@@ -20,8 +23,8 @@ public class UserController {
     }
 
     @GetMapping
-    public List<UserDto> list() {
-        return userService.listUsers();
+    public Page<UserDto> list(@PageableDefault(size = 10) Pageable pageable) {
+        return userService.listUsers(pageable);
     }
 
     @PostMapping("/register")

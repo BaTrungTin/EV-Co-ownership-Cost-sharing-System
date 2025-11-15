@@ -21,7 +21,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     @EntityGraph(attributePaths = {"group", "vehicle", "createdBy"})
     List<Expense> findByVehicleId(Long vehicleId);
     
-    @EntityGraph(attributePaths = {"group", "vehicle", "createdBy"})
+    @EntityGraph(attributePaths = {"group", "group.createdBy", "vehicle", "createdBy"})
     @Override
     List<Expense> findAll();
     

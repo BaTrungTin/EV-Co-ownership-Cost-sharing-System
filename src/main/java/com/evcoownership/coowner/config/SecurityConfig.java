@@ -34,9 +34,22 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/api/auth/**",
+                    "/api/users/register",  // Allow registration without authentication
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
-                    "/swagger-ui.html"
+                    "/swagger-ui.html",
+                    // Static resources
+                    "/html/**",
+                    "/css/**",
+                    "/js/**",
+                    "/images/**",
+                    "/fonts/**",
+                    "/assets/**",
+                    "/favicon.ico",
+                    "/",
+                    "/index.html",
+                    "/login.html",
+                    "/register.html"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

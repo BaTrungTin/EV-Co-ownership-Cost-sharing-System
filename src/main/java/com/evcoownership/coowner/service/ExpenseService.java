@@ -193,5 +193,12 @@ public class ExpenseService {
         return expenseRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Expense không tồn tại"));
     }
+
+    @Transactional(readOnly = true)
+    public void verifyUserIsGroupMember(Long groupId, Long userId) {
+        if (!ownershipShareRepository.existsByGroupIdAndUserId(groupId, userId)) {
+            throw new IllegalArgumentException("Bạn không phải là member của nhóm này");
+        }
+    }
 }
 

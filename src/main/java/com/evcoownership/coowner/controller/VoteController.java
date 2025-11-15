@@ -3,6 +3,7 @@ package com.evcoownership.coowner.controller;
 import com.evcoownership.coowner.model.User;
 import com.evcoownership.coowner.model.UserVote;
 import com.evcoownership.coowner.model.Vote;
+import com.evcoownership.coowner.model.VoteOption;
 import com.evcoownership.coowner.security.SecurityUtils;
 import com.evcoownership.coowner.service.VoteService;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +52,21 @@ public class VoteController {
     @GetMapping("/{id}")
     public ResponseEntity<Vote> get(@PathVariable Long id) {
         return ResponseEntity.ok(voteService.getVote(id));
+    }
+
+    @GetMapping("/{id}/options")
+    public ResponseEntity<List<VoteOption>> getVoteOptions(@PathVariable Long id) {
+        return ResponseEntity.ok(voteService.getVoteOptions(id));
+    }
+
+    @GetMapping("/{id}/my-vote")
+    public ResponseEntity<UserVote> getMyVote(@PathVariable Long id) {
+        User currentUser = securityUtils.getCurrentUser();
+        UserVote myVote = voteService.getMyVote(id, currentUser.getId());
+        if (myVote == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(myVote);
     }
 
     @PutMapping("/{id}/close")

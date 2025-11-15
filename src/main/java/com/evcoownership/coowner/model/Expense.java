@@ -14,17 +14,17 @@ public class Expense {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "group_id")
-    @JsonIgnoreProperties({"ownershipShares"}) // Tránh circular reference
+    @JsonIgnoreProperties({"ownershipShares"})
     private Group group;
 
     @ManyToOne
     @JoinColumn(name = "vehicle_id")
-    @JsonIgnoreProperties({"group"}) // Tránh circular reference
-    private Vehicle vehicle; // null nếu là chi phí chung của group
+    @JsonIgnoreProperties({"group"}) 
+    private Vehicle vehicle;
 
     @ManyToOne
     @JoinColumn(name = "created_by")
-    @JsonIgnoreProperties({"password", "roles"}) // Không trả về password và roles để tránh LazyInitializationException
+    @JsonIgnoreProperties({"password", "roles"})
     private User createdBy;
 
     @Column(nullable = false)
