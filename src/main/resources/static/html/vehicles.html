@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Quản lý Xe - EV Co-ownership System</title>
+  <!-- Fonts and icons -->
+  <link href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,800" rel="stylesheet" />
+  <!-- Nucleo Icons -->
+  <link href="../css/nucleo-icons.css" rel="stylesheet" />
+  <link href="../css/nucleo-svg.css" rel="stylesheet" />
+  <!-- Font Awesome Icons -->
+  
+  <!-- CSS Files -->
+  <link id="pagestyle" href="../css/soft-ui-dashboard.min.css?v=1.1.0" rel="stylesheet" />
+</head>
+
+<body class="g-sidenav-show bg-gray-100">
+  <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3" id="sidenav-main">
+    <div class="sidenav-header">
+      <i class="ni ni-fat-remove p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
+      <a class="navbar-brand m-0" href="admin-dashboard.html"><span class="ms-1 font-weight-bold">EV Co-ownership</span>
+      </a>
+    </div>
+    <hr class="horizontal dark mt-0">
+    <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="admin-dashboard.html"><span class="nav-link-text ms-1">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="groups.html"><span class="nav-link-text ms-1">Nhóm</span>
+          </a>
+        </li>
+        <li class="nav-item" id="votesNavItem">
+          <a class="nav-link" href="votes.html"><span class="nav-link-text ms-1">Bỏ phiếu</span>
+          </a>
+        </li>
+        <li class="nav-item" id="fundsNavItem">
+          <a class="nav-link" href="funds.html"><span class="nav-link-text ms-1">Quỹ chung</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="vehicles.html"><span class="nav-link-text ms-1">Xe</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="bookings.html"><span class="nav-link-text ms-1">Booking</span>
+          </a>
+        </li>
+        <li class="nav-item" id="usageHistoryNavItem">
+          <a class="nav-link" href="usage-history.html"><span class="nav-link-text ms-1">Lịch sử sử dụng</span>
+          </a>
+        </li>
+        <li class="nav-item" id="expensesNavItem">
+          <a class="nav-link" href="expenses.html"><span class="nav-link-text ms-1">Chi phí</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="payments.html"><span class="nav-link-text ms-1">Thanh toán</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="contracts.html"><span class="nav-link-text ms-1">Hợp đồng</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="reports.html"><span class="nav-link-text ms-1">Báo cáo</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </aside>
+  
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+    <!-- Navbar -->
+    <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" navbar-scroll="true">
+      <div class="container-fluid py-1 px-3">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
+            <li class="breadcrumb-item text-sm"><a class="opacity-5 text-dark" href="javascript:;">Pages</a></li>
+            <li class="breadcrumb-item text-sm text-dark active" aria-current="page">Quản lý Xe</li>
+          </ol>
+          <h6 class="font-weight-bolder mb-0">Quản lý Xe</h6>
+        </nav>
+        <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
+          <ul class="navbar-nav justify-content-end">
+            <li class="nav-item d-flex align-items-center">
+              <a href="javascript:;" class="nav-link text-body font-weight-bold px-0" id="userNameNav" title="ID của bạn"><span class="d-sm-inline d-none" id="userNameText">User</span><span class="d-sm-inline d-none ms-2 text-xs text-secondary" id="userIdText">(ID: -)</span>
+              </a>
+            </li>
+            <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
+              <a href="javascript:;" class="nav-link text-body p-0" id="iconNavbarSidenav">
+                <div class="sidenav-toggler-inner">
+                  <i class="sidenav-toggler-line"></i>
+                  <i class="sidenav-toggler-line"></i>
+                  <i class="sidenav-toggler-line"></i>
+                </div>
+              </a>
+            </li>
+            <li class="nav-item px-3 d-flex align-items-center">
+              <a href="javascript:;" class="nav-link text-body p-0" id="logoutBtn">
+                
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!-- End Navbar -->
+    
+    <div class="container-fluid py-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+              <h6>Danh sách Xe</h6>
+              <button class="btn btn-primary btn-sm" onclick="showCreateVehicleModal()">
+                 Thêm xe mới
+              </button>
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+              <div class="px-3 mb-3">
+                <label for="groupIdFilter" class="form-label">Lọc theo nhóm:</label>
+                <select id="groupIdFilter" class="form-select" onchange="filterVehicles()" style="max-width: 300px;">
+                  <option value="">Tất cả nhóm</option>
+                </select>
+              </div>
+              <div class="table-responsive p-0">
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">VIN</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Biển số</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Model</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nhóm</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody id="vehiclesTableBody">
+                    <tr>
+                      <td colspan="6" class="text-center">Đang tải...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Create Vehicle Modal -->
+  <div class="modal fade" id="createVehicleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Thêm xe mới</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="createVehicleForm">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="vehicleVin" class="form-label">VIN *</label>
+              <input type="text" class="form-control" id="vehicleVin" name="vin" required placeholder="Nhập VIN">
+            </div>
+            <div class="mb-3">
+              <label for="vehiclePlate" class="form-label">Biển số *</label>
+              <input type="text" class="form-control" id="vehiclePlate" name="plate" required placeholder="Nhập biển số">
+            </div>
+            <div class="mb-3">
+              <label for="vehicleModel" class="form-label">Model *</label>
+              <input type="text" class="form-control" id="vehicleModel" name="model" required placeholder="Nhập model">
+            </div>
+            <div class="mb-3">
+              <label for="vehicleGroupId" class="form-label">Nhóm *</label>
+              <select id="vehicleGroupId" class="form-select" name="groupId" required>
+                <option value="">Chọn nhóm</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-primary">Thêm xe</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Core JS Files -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Common JS -->
+  <script src="../js/common.js"></script>
+  <!-- Dashboard Router -->
+  <script src="../js/dashboard-router.js"></script>
+  <!-- Vehicles JS -->
+  <script src="../js/vehicles.js"></script>
+  
+  <script>
+    // Initialize sidenav toggle
+    if (document.getElementById('iconNavbarSidenav')) {
+      document.getElementById('iconNavbarSidenav').addEventListener('click', function() {
+        const sidenav = document.getElementById('sidenav-main');
+        if (sidenav) {
+          sidenav.classList.toggle('g-sidenav-pinned');
+        }
+      });
+    }
+
+    if (document.getElementById('iconSidenav')) {
+      document.getElementById('iconSidenav').addEventListener('click', function() {
+        const sidenav = document.getElementById('sidenav-main');
+        if (sidenav) {
+          sidenav.classList.toggle('g-sidenav-pinned');
+        }
+      });
+    }
+
+    // Logout
+    if (document.getElementById('logoutBtn')) {
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        logout();
+      });
+    }
+
+    // Load user info
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (checkAuth()) {
+        const user = await loadCurrentUser();
+        if (user) {
+          displayUserInfoInNavbar(user);
+        }
+        // Hide expenses menu for admin
+        if (user && user.roles && Array.isArray(user.roles) && user.roles.includes('ADMIN')) {
+          const expensesNavItem = document.getElementById('expensesNavItem');
+          if (expensesNavItem) expensesNavItem.style.display = 'none';
+          const usageHistoryNavItem = document.getElementById('usageHistoryNavItem');
+          if (usageHistoryNavItem) usageHistoryNavItem.style.display = 'none';
+          const votesNavItem = document.getElementById('votesNavItem');
+          if (votesNavItem) votesNavItem.style.display = 'none';
+          const fundsNavItem = document.getElementById('fundsNavItem');
+          if (fundsNavItem) fundsNavItem.style.display = 'none';
+        }
+      }
+    });
+
+    // Modal functions
+    function showCreateVehicleModal() {
+      const modal = new bootstrap.Modal(document.getElementById('createVehicleModal'));
+      modal.show();
+    }
+  </script>
+</body>
+</html>
