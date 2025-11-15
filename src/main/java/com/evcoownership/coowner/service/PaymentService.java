@@ -48,15 +48,14 @@ public class PaymentService {
         payment.setExpenseShare(expenseShare);
         payment.setUser(user);
         payment.setAmount(amount);
-        payment.setMethod(method); // E_WALLET, BANKING, CASH
-        payment.setStatus("COMPLETED"); // Đơn giản: luôn completed
+        payment.setMethod(method); 
+        payment.setStatus("COMPLETED"); 
         payment.setCreatedAt(LocalDateTime.now());
         payment.setCompletedAt(LocalDateTime.now());
         payment.setTransactionId(UUID.randomUUID().toString());
 
         Payment savedPayment = paymentRepository.save(payment);
 
-        // Cập nhật ExpenseShare
         BigDecimal newPaidAmount = (expenseShare.getPaidAmount() != null ? expenseShare.getPaidAmount() : BigDecimal.ZERO)
                 .add(amount);
         expenseShare.setPaidAmount(newPaidAmount);
