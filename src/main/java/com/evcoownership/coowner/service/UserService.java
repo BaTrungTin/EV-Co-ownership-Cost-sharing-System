@@ -48,6 +48,8 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Page<UserDto> listUsers(Pageable pageable) {
+        // Sử dụng findAllWithRoles() nếu cần, nhưng với pagination thì dùng EntityGraph
+        // EntityGraph trong repository sẽ tự động load roles
         return userRepository.findAll(pageable).map(this::toDto);
     }
 

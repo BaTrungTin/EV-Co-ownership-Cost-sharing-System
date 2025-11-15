@@ -15,17 +15,20 @@ public class VoteService {
     private final UserVoteRepository userVoteRepository;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
+    private final OwnershipShareRepository ownershipShareRepository;
 
     public VoteService(VoteRepository voteRepository,
                       VoteOptionRepository voteOptionRepository,
                       UserVoteRepository userVoteRepository,
                       GroupRepository groupRepository,
-                      UserRepository userRepository) {
+                      UserRepository userRepository,
+                      OwnershipShareRepository ownershipShareRepository) {
         this.voteRepository = voteRepository;
         this.voteOptionRepository = voteOptionRepository;
         this.userVoteRepository = userVoteRepository;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
+        this.ownershipShareRepository = ownershipShareRepository;
     }
 
     @Transactional
@@ -35,6 +38,18 @@ public class VoteService {
                 .orElseThrow(() -> new IllegalArgumentException("Group không tồn tại"));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User không tồn tại"));
+        
+        // Check user có phải là ADMIN không - Admin không được tạo vote
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(role -> "ADMIN".equals(role.getName()));
+        if (isAdmin) {
+            throw new IllegalArgumentException("Admin không thể tham gia bỏ phiếu trong nhóm");
+        }
+        
+        // Check membership - chỉ member mới được tạo vote
+        if (!ownershipShareRepository.existsByGroupIdAndUserId(groupId, userId)) {
+            throw new IllegalArgumentException("Bạn không phải là member của nhóm này");
+        }
 
         Vote vote = new Vote();
         vote.setGroup(group);
@@ -84,6 +99,19 @@ public class VoteService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User không tồn tại"));
+        
+        // Check user có phải là ADMIN không - Admin không được vote
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(role -> "ADMIN".equals(role.getName()));
+        if (isAdmin) {
+            throw new IllegalArgumentException("Admin không thể tham gia bỏ phiếu trong nhóm");
+        }
+        
+        // Check membership - chỉ member của group mới được vote
+        Long groupId = vote.getGroup().getId();
+        if (!ownershipShareRepository.existsByGroupIdAndUserId(groupId, userId)) {
+            throw new IllegalArgumentException("Bạn không phải là member của nhóm này");
+        }
 
         UserVote userVote = new UserVote();
         userVote.setVote(vote);
@@ -108,6 +136,15 @@ public class VoteService {
     public Vote getVote(Long id) {
         return voteRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Vote không tồn tại"));
+    }
+
+    public List<VoteOption> getVoteOptions(Long voteId) {
+        return voteOptionRepository.findByVoteId(voteId);
+    }
+
+    public UserVote getMyVote(Long voteId, Long userId) {
+        return userVoteRepository.findByVoteIdAndUserId(voteId, userId)
+                .orElse(null);
     }
 
     @Transactional

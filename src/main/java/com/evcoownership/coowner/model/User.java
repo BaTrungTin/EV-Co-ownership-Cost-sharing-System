@@ -1,5 +1,7 @@
 package com.evcoownership.coowner.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,12 +21,14 @@ public class User {
     private String fullName;
 
     @Column(nullable = false)
+    @JsonIgnore // Không trả về password trong JSON
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JsonIgnoreProperties({"users"}) // Tránh circular reference với Role
     private Set<Role> roles = new HashSet<>();
 
     public Long getId() { return id; }
