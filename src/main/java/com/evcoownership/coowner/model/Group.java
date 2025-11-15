@@ -1,70 +1,36 @@
 package com.evcoownership.coowner.model;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.*;
-
 @Entity
 @Table(name = "groups")
-public class Group 
-{
+public class Group {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "group_id")
-    private Long id; 
+    private Long id;
 
-    @Column(name = "group_name", nullable = false, unique = true)
-    private String groupName;
+    @Column(nullable = false, unique = true)
+    private String name;
 
-    @Column(name = "description", nullable = false)
-    private String description;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    @JsonIgnoreProperties({"groups", "roles"}) // Tránh circular reference
+    private User createdBy;
 
-    @Column(name = "vehicle_info", nullable = false)
-    private String vehicleInfo;
-
-    @Column(name = "created_by", nullable = false)
-    private Long createdBy;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
-
-    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OwnershipShare> ownershipShare = new ArrayList<> ();
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"group"}) // Tránh circular reference khi serialize JSON
+    private List<OwnershipShare> ownershipShares = new ArrayList<>();
 
     public Long getId() { return id; }
-
-    public void setId(Long id) { this.id = id; }
-
-    public String getGroupName() { return groupName; }
-
-    public void setGroupName(String groupName) { this.groupName = groupName; }
-
-    public String getDescription() { return description; }
-
-    public void setDescription(String description) { this.description = description; }
-
-    public String getVehicleInfo() { return vehicleInfo; }
-
-    public void setVehicleInfo(String vehicleInfo) { this.vehicleInfo = vehicleInfo; }
-
-    public Long getCreatedBy() { return createdBy; }
-
-    public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-
-    public List<OwnershipShare> getOwnershipShare() { return ownershipShare; }
-
-    public void setOwnershipShare(List<OwnershipShare> ownershipShare) { this.ownershipShare = ownershipShare; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public User getCreatedBy() { return createdBy; }
+    public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
+    public List<OwnershipShare> getOwnershipShares() { return ownershipShares; }
 }
+
+

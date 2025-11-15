@@ -1,19 +1,15 @@
 package com.evcoownership.coowner.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
-public class CreateGroupRequest 
-{
-    @NotBlank(message = "Ten nhom khong duoc de trong!")
+public class CreateGroupRequest {
+    @NotBlank
+    @Size(min = 2, max = 100)
     private String name;
 
-    @NotNull(message = "ID nguoi tao khong duoc null!")
-    private Long createdBy;
-    
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-
-    public Long getCreatedBy() { return createdBy; }
-    public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
 }
+
+
