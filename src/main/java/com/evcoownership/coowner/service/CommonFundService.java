@@ -4,10 +4,7 @@ import com.evcoownership.coowner.model.CommonFund;
 import com.evcoownership.coowner.model.FundTransaction;
 import com.evcoownership.coowner.model.Group;
 import com.evcoownership.coowner.model.User;
-import com.evcoownership.coowner.repository.CommonFundRepository;
-import com.evcoownership.coowner.repository.FundTransactionRepository;
-import com.evcoownership.coowner.repository.GroupRepository;
-import com.evcoownership.coowner.repository.UserRepository;
+import com.evcoownership.coowner.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,15 +18,38 @@ public class CommonFundService {
     private final FundTransactionRepository transactionRepository;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
+    private final OwnershipShareRepository ownershipShareRepository;
 
     public CommonFundService(CommonFundRepository fundRepository,
-                            FundTransactionRepository transactionRepository,
-                            GroupRepository groupRepository,
-                            UserRepository userRepository) {
+                             FundTransactionRepository transactionRepository,
+                             GroupRepository groupRepository,
+                             UserRepository userRepository,
+                             OwnershipShareRepository ownershipShareRepository) {
         this.fundRepository = fundRepository;
         this.transactionRepository = transactionRepository;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
+        this.ownershipShareRepository = ownershipShareRepository;
+    }
+
+    public void verifyUserCanAccessGroupFunds(Long groupId, Long userId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Group không tồn tại"));
+        
+        boolean isMember = ownershipShareRepository.existsByGroupIdAndUserId(groupId, userId);
+        boolean isCreator = group.getCreatedBy() != null && group.getCreatedBy().getId().equals(userId);
+        
+        if (!isMember && !isCreator) {
+            throw new IllegalArgumentException("Bạn không phải là member của nhóm này");
+        }
+    }
+
+    public void verifyUserCanAccessFund(Long fundId, Long userId) {
+        CommonFund fund = fundRepository.findById(fundId)
+                .orElseThrow(() -> new IllegalArgumentException("Fund không tồn tại"));
+        
+        Long groupId = fund.getGroup().getId();
+        verifyUserCanAccessGroupFunds(groupId, userId);
     }
 
     @Transactional

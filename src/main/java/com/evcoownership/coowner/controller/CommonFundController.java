@@ -25,6 +25,11 @@ public class CommonFundController {
 
     @PostMapping
     public ResponseEntity<CommonFund> create(@RequestBody CreateFundRequest request) {
+        // Verify user is member of the group (unless admin)
+        com.evcoownership.coowner.model.User currentUser = securityUtils.getCurrentUser();
+        if (!securityUtils.isAdmin(currentUser)) {
+            fundService.verifyUserCanAccessGroupFunds(request.getGroupId(), currentUser.getId());
+        }
         return ResponseEntity.ok(fundService.createFund(
             request.getGroupId(), 
             request.getFundType(), 
@@ -37,6 +42,10 @@ public class CommonFundController {
                                                   @RequestParam BigDecimal amount,
                                                   @RequestParam(required = false) String description) {
         User currentUser = securityUtils.getCurrentUser();
+        // Verify user is member of the fund's group (unless admin)
+        if (!securityUtils.isAdmin(currentUser)) {
+            fundService.verifyUserCanAccessFund(fundId, currentUser.getId());
+        }
         return ResponseEntity.ok(fundService.deposit(fundId, amount, currentUser.getId(), description));
     }
 
@@ -46,16 +55,30 @@ public class CommonFundController {
                                                    @RequestParam(required = false) String description,
                                                    @RequestParam(required = false) String reference) {
         User currentUser = securityUtils.getCurrentUser();
+        // Verify user is member of the fund's group (unless admin)
+        if (!securityUtils.isAdmin(currentUser)) {
+            fundService.verifyUserCanAccessFund(fundId, currentUser.getId());
+        }
         return ResponseEntity.ok(fundService.withdraw(fundId, amount, currentUser.getId(), description, reference));
     }
 
     @GetMapping("/group/{groupId}")
     public ResponseEntity<List<CommonFund>> getGroupFunds(@PathVariable Long groupId) {
+        // Verify user is member of the group (unless admin)
+        com.evcoownership.coowner.model.User currentUser = securityUtils.getCurrentUser();
+        if (!securityUtils.isAdmin(currentUser)) {
+            fundService.verifyUserCanAccessGroupFunds(groupId, currentUser.getId());
+        }
         return ResponseEntity.ok(fundService.getGroupFunds(groupId));
     }
 
     @GetMapping("/{fundId}/transactions")
     public ResponseEntity<List<FundTransaction>> getTransactions(@PathVariable Long fundId) {
+        // Verify user is member of the fund's group (unless admin)
+        com.evcoownership.coowner.model.User currentUser = securityUtils.getCurrentUser();
+        if (!securityUtils.isAdmin(currentUser)) {
+            fundService.verifyUserCanAccessFund(fundId, currentUser.getId());
+        }
         return ResponseEntity.ok(fundService.getFundTransactions(fundId));
     }
 
